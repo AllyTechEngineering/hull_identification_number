@@ -1,28 +1,32 @@
-[
-  {
-    "4WN": {
+{
+  "4WN": [
+    {
       "Company": "FOUR WINNS INC",
       "Address": "4 WINN WAY",
       "City": "CADILLAC",
       "State": "MI"
-    },
-    "AAA": {
-      "Company": "LA VIDA YACHT SALES",
-      "Address": "PO BOX 8300",
-      "City": "ST THOMAS",
-      "State": "VI"
-    },
-    "AAB": {
+    }
+  ],
+  "AAA": [
+    {    "Company": "LA VIDA YACHT SALES",
+    "Address": "PO BOX 8300",
+    "City": "ST THOMAS",
+    "State": "VI"}
+  ],
+  "AAB": [
+    {
       "Company": "ALL-A-BOARD PONTOONS",
       "Address": "211 S MULBERRY ST",
       "City": "FARINA",
       "State": "IL"
-    },
-    "AAC": {
+    }
+  ],
+  "AAC": [
+    {
       "Company": "ALL CRAFT MARINE LLC",
       "Address": "40047 COUNTY RD 54 E",
       "City": "ZEPHYRHILLS",
       "State": "FL"
     }
-  }
-]
+  ]
+}
