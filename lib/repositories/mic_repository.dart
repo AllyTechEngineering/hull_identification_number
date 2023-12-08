@@ -10,6 +10,9 @@ import 'package:hull_identification_number/models/mic_data_model.dart';
 class MicRepository {
   Future<List<MicDataModel>> getMicData(String userMicEnteredValue) async {
     try {
+      if (userMicEnteredValue.isEmpty) {
+        userMicEnteredValue = '';
+      }
       final String micDataFile =
           await rootBundle.loadString('lib/mic_data/modified_mic_data_v2.json');
       // debugPrint('lib/mic_data/mic_data.json lib/mic_data/mic_data.json: $micDataFile');
@@ -26,7 +29,7 @@ class MicRepository {
           },
         ),
       );
-      debugPrint('this is micDataList: $micDataList');
+      // debugPrint('this is micDataList: $micDataList');
       return micDataList;
     } catch (e) {
       debugPrint('Error e: $e');

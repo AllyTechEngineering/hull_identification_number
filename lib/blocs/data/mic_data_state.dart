@@ -1,18 +1,18 @@
-part of 'data_cubit.dart';
+part of 'mic_data_cubit.dart';
 
-abstract class DataState extends Equatable {}
+abstract class MicDataState extends Equatable {}
 
-class InitialState extends DataState {
+class InitialState extends MicDataState {
   @override
   List<Object> get props => [];
 }
 
-class LoadingState extends DataState {
+class LoadingState extends MicDataState {
   @override
   List<Object> get props => [];
 }
 
-class LoadedState extends DataState {
+class LoadedState extends MicDataState {
   LoadedState(this.micData);
 
   final List<MicDataModel> micData;
@@ -26,7 +26,7 @@ class LoadedState extends DataState {
   }
 }
 
-class ErrorState extends DataState {
+class ErrorState extends MicDataState {
   @override
   List<Object> get props => [];
 }

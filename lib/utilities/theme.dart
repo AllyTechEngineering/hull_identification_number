@@ -43,19 +43,19 @@ final appTheme = ThemeData(
       color: Color(0xFF34495E),
     ),
   ),
-  appBarTheme: AppBarTheme(
+  appBarTheme: const AppBarTheme(
     actionsIconTheme: IconThemeData(
       size: 40.0,
       weight: 400.0,
       fill: 1.0,
-      color: Color(0xFFFFFFFF),
+      color: Colors.white60,
       opacity: 1.0,
     ),
     iconTheme: IconThemeData(
       size: 40.0,
       weight: 900.0,
       fill: 1.0,
-      color: Color(0xFFFFFFFF),
+      color: Colors.white60,
       opacity: 1.0,
     ),
     elevation: 4,

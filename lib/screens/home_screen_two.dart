@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hull_identification_number/blocs/data/data_cubit.dart';
+import 'package:hull_identification_number/blocs/data/mic_data_cubit.dart';
+import 'package:hull_identification_number/blocs/hin_data/hin_data_cubit.dart';
+import 'package:hull_identification_number/models/hin_data_model.dart';
 import 'package:hull_identification_number/models/mic_data_model.dart';
 import 'package:hull_identification_number/repositories/mic_repository.dart';
 import 'package:hull_identification_number/utilities/decode_hin_class.dart';
@@ -19,8 +21,10 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
   final MicRepository micRepository = MicRepository();
   final ResponsiveAdaptiveClass responsiveAdaptiveClass = ResponsiveAdaptiveClass();
   final DecodeHinClass decodeHinClass = DecodeHinClass();
+  // final _formkey = GlobalKey();
   final List<String> micDataForListView = [];
   MicDataModel micDataModel = const MicDataModel();
+  HinDataModel hinDataModel = const HinDataModel();
   String decodedInfo = '';
 
   @override
@@ -29,8 +33,8 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
     responsiveAdaptiveClass.size = MediaQuery.of(context).size;
     responsiveAdaptiveClass.height = responsiveAdaptiveClass.size.height;
     responsiveAdaptiveClass.width = responsiveAdaptiveClass.size.width;
-
-    return BlocBuilder<DataCubit, DataState>(
+    String micValueForValidation = '111';
+    return BlocBuilder<MicDataCubit, MicDataState>(
       builder: (context, state) {
         return Scaffold(
           resizeToAvoidBottomInset: false,
@@ -85,7 +89,7 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25.0),
-                        borderSide: BorderSide(width: 4.0, color: Colors.black),
+                        borderSide: const BorderSide(width: 4.0, color: Colors.black),
                       ),
                       hintStyle: Theme.of(context).textTheme.displayLarge,
                       hintText: 'Enter a 12 digit HIN...',
@@ -112,31 +116,50 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                     // color: Colors.deepPurple.shade300,
                     borderRadius: BorderRadius.circular(35.0),
                   ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      String tempMicValue = decodeHIN();
-                      context.read<DataCubit>().getUserEnteredMicData(tempMicValue);
-                    },
-                    style: ElevatedButton.styleFrom(
-                        elevation: 10.0,
-                        // fixedSize: Size((width * 0.75), (height / 5.5)),
-                        fixedSize: Size(
-                            responsiveAdaptiveClass.elevatedButtonWidth =
-                                responsiveAdaptiveClass.selectElevatedButtonWidth(),
-                            responsiveAdaptiveClass.elevatedButtonHeight =
-                                responsiveAdaptiveClass.selectElevatedButtonHeight()),
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 3.0, style: BorderStyle.solid),
-                          borderRadius: BorderRadius.circular(35.0),
-                        ),
-                        backgroundColor: Colors.transparent),
-                    child: Text(
-                      'Decode HIN',
-                      style: TextStyle(
-                          fontSize: responsiveAdaptiveClass.classFontSize =
-                              responsiveAdaptiveClass.selectClassFontSize(),
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                  child: BlocListener<HinDataCubit, HinDataState>(
+                    listener: (context, state) {},
+                    child: ElevatedButton(
+                      onPressed: () {
+                        /// TODO: error check method before using substring to avoid
+                        /// RangeError (end): Invalid value: Not in inclusive range
+                        if (hinController.text.isNotEmpty) {
+                          checkUserInputHinValidator(hinController.text.trim().toUpperCase());
+                          checkUserHinEntryLength(hinController.text.trim().toUpperCase());
+                          context.read<HinDataCubit>().userHinInputDecode(
+                                hinController.text.trim().toUpperCase(),
+                              );
+                        } else if (hinController.text.isEmpty) {
+                          checkUserHinEntryLength(hinController.text.trim().toUpperCase());
+                        }
+
+                        /// TODO: change so that in the HomeScreenTwo the user is notified of errors.
+                        /// Until I understand how to report errors back to the UI and alert the user (from a cubit or bloc) handle the actual error management in the cubits.
+                        checkUserMicEntryValidForm(hinController.text.trim().toUpperCase());
+                        context.read<MicDataCubit>().getUserEnteredMicData(
+                              hinController.text.trim().toUpperCase(),
+                            );
+                      },
+                      style: ElevatedButton.styleFrom(
+                          elevation: 10.0,
+                          // fixedSize: Size((width * 0.75), (height / 5.5)),
+                          fixedSize: Size(
+                              responsiveAdaptiveClass.elevatedButtonWidth =
+                                  responsiveAdaptiveClass.selectElevatedButtonWidth(),
+                              responsiveAdaptiveClass.elevatedButtonHeight =
+                                  responsiveAdaptiveClass.selectElevatedButtonHeight()),
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(width: 1.0, style: BorderStyle.solid),
+                            borderRadius: BorderRadius.circular(35.0),
+                          ),
+                          backgroundColor: Colors.transparent),
+                      child: Text(
+                        'Decode HIN',
+                        style: TextStyle(
+                            fontSize: responsiveAdaptiveClass.classFontSize =
+                                responsiveAdaptiveClass.selectClassFontSize(),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
@@ -159,8 +182,9 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                     onPressed: () {
                       setState(() {
                         hinController.clear();
-                        decodedInfo = '';
-                        context.read<DataCubit>().getUserEnteredMicData('111');
+                        // decodedInfo = '';
+                        context.read<MicDataCubit>().getUserEnteredMicData('111');
+                        context.read<HinDataCubit>().userHinInputDecode('');
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -172,7 +196,7 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                             responsiveAdaptiveClass.elevatedButtonHeight =
                                 responsiveAdaptiveClass.selectElevatedButtonHeight()),
                         shape: RoundedRectangleBorder(
-                          side: BorderSide(width: 3.0, style: BorderStyle.solid),
+                          side: const BorderSide(width: 1.0, style: BorderStyle.solid),
                           borderRadius: BorderRadius.circular(35.0),
                         ),
                         backgroundColor: Colors.transparent),
@@ -187,17 +211,76 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                   ),
                 ),
                 const SizedBox(height: 8.0),
-                BlocBuilder<DataCubit, DataState>(
+                BlocBuilder<HinDataCubit, HinDataState>(
                   builder: (context, state) {
+                    final hinResults = state.hinDataResponse;
                     return Padding(
-                      padding: const EdgeInsets.all(4.0),
+                      padding: const EdgeInsets.fromLTRB(4.0, 2.0, 4.0, 0.0),
                       child: Column(
-                        // mainAxisAlignment: MainAxisAlignment.center,
-                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const Divider(
+                            color: Colors.white60,
+                            thickness: 4,
+                            endIndent: 2,
+                            indent: 2,
+                          ),
+                          const Center(
+                            child: Text(
+                              // decodedInfo
+                              'Decoded HIN Results',
+                              style: TextStyle(fontSize: 18.0, color: Colors.white60),
+                            ),
+                          ),
                           Text(
-                            decodedInfo,
-                            style: const TextStyle(fontSize: 16.0, color: Colors.white),
+                            // decodedInfo
+                            'Manuf ID: ${hinResults[0].manufIdentCode}',
+                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                          const Divider(
+                            color: Colors.white60,
+                            thickness: 2,
+                            endIndent: 2,
+                            indent: 2,
+                          ),
+                          Text(
+                            // decodedInfo
+                            'Serial Number: ${hinResults[0].hullSerialNumber}',
+                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                          const Divider(
+                            color: Colors.white60,
+                            thickness: 2,
+                            endIndent: 2,
+                            indent: 2,
+                          ),
+                          Text(
+                            // decodedInfo
+                            'Manuf. Month: ${hinResults[0].monthOfProduction}',
+                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                          const Divider(
+                            color: Colors.white60,
+                            thickness: 2,
+                            endIndent: 2,
+                            indent: 2,
+                          ),
+                          Text(
+                            // decodedInfo
+                            'Production Year: ${hinResults[0].yearOfProduction}',
+                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                          ),
+                          const Divider(
+                            color: Colors.white60,
+                            thickness: 2,
+                            endIndent: 2,
+                            indent: 2,
+                          ),
+                          Text(
+                            // decodedInfo
+                            'Model Year: ${hinResults[0].modelYear}',
+                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
                           ),
                         ],
                       ),
@@ -205,14 +288,15 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                   },
                 ),
                 const Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Divider(
-                    thickness: 2,
-                    endIndent: 2,
-                    indent: 2,
-                  ),
+                  padding: EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 4.0),
+                  // child: Divider(
+                  //   color: Colors.white,
+                  //   thickness: 4,
+                  //   endIndent: 2,
+                  //   indent: 2,
+                  // ),
                 ),
-                BlocBuilder<DataCubit, DataState>(
+                BlocBuilder<MicDataCubit, MicDataState>(
                   builder: (context, state) {
                     if (state is LoadedState) {
                       final micResults = state.micData;
@@ -222,29 +306,64 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const Divider(
+                              color: Colors.white60,
+                              thickness: 4,
+                              endIndent: 2,
+                              indent: 2,
+                            ),
+                            const Center(
+                              child: Text(
+                                'Manuf. ID Code',
+                                style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white60),
+                              ),
+                            ),
                             Text(
                               'Manuf: ${micResults[0].company}',
                               style: const TextStyle(
-                                  fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const Divider(
+                              color: Colors.white60,
+                              thickness: 2,
+                              endIndent: 2,
+                              indent: 2,
                             ),
                             Text(
                               'Address: ${micResults[0].address}',
                               style: const TextStyle(
-                                  fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const Divider(
+                              color: Colors.white60,
+                              thickness: 2,
+                              endIndent: 2,
+                              indent: 2,
                             ),
                             Text(
                               'City: ${micResults[0].city}',
                               style: const TextStyle(
-                                  fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const Divider(
+                              color: Colors.white60,
+                              thickness: 2,
+                              endIndent: 2,
+                              indent: 2,
                             ),
                             Text(
                               'State: ${micResults[0].state}',
                               style: const TextStyle(
-                                  fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                           ],
                         ),
                       );
+                    } else if (state is ErrorState) {
+                      debugPrint('In HomeScreenTwo else if state is ErrorState: $state');
                     }
                     return Text('');
                   },
@@ -257,156 +376,240 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
     );
   } //Widget build
 
-  String decodeHIN() {
-    int earlyHinWithMyearToInt = 0;
-    int currentYearValue = 0;
-    String micUserDataResult = '';
-    String hin = hinController.text.trim().toUpperCase();
-
-    if (hin.length != 12) {
-      hinLengthError();
-      return micUserDataResult;
+  checkUserInputHinValidator(String userInputHin) {
+    // debugPrint('In checkUserInputHinValidator and HIN is: $userInputHin');
+    RegExp straightYearHinFormatRegExp = RegExp(r'^\w{1}[A-Za-z]{2}\w{5}\d{2}\d{2}$');
+    bool straightYearHinFormatResult = straightYearHinFormatRegExp.hasMatch(userInputHin);
+    if (straightYearHinFormatResult) {
+      // debugPrint(
+      //     'checkUserInputHinValidator Straight Year: $straightYearHinFormatResult and HIN: $userInputHin');
+      setState(() {
+        const snackBar = SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            'Valid HIN: Straight Year Format',
+            style: TextStyle(fontSize: 30.0),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    }
+    RegExp modelYearHinFormatRegExp = RegExp(r'^\w{1}[A-Za-z]{2}\w{5}[M-m]{1}\d{2}[A-La-l]{1}$');
+    bool modelYearHinFormatResult = modelYearHinFormatRegExp.hasMatch(userInputHin);
+    if (modelYearHinFormatResult) {
+      // debugPrint('modelYearFormatResult test using RegExp: $modelYearHinFormatResult');
+      setState(() {
+        const snackBar = SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            'Valid HIN: Model Year Format',
+            style: TextStyle(fontSize: 30.0),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
     }
 
-    /// Three HIN Formats
-    /// Straight Year Format (Used November 1, 1972– July 31, 1984)
-    /// ABC 12345   08                    83
-    /// MIC SN      Month of production   Year of production
-    ///
-    /// Current Format (Used exclusively August 1, 1984 to present)
-    /// BMA 45678   H4                    85
-    /// MIC SN      Month of production   Year of production
-
-    String mic = hin.substring(0, 3);
-    // Define regular expressions to check for numeric and alpha characters
-    RegExp numericRegExp = RegExp(r'\d');
-    RegExp alphaRegExp = RegExp(r'[a-zA-Z]');
-
-    // Iterate through each character in the string
-    for (int i = 0; i < mic.length; i++) {
-      bool micHasNumericAt1 = numericRegExp.hasMatch(mic[1]);
-      bool micHasNumericAt2 = numericRegExp.hasMatch(mic[2]);
-      // Check if the character is alpha
-      bool isAlpha = alphaRegExp.hasMatch(mic[i]);
-      // Handle the exception at each location
-      if (micHasNumericAt1 || micHasNumericAt2) {
-        hinMicError();
-        return micUserDataResult;
-        // Handle the exception here, for example, show an error message to the user.
-      }
+    RegExp currentHinFormatRegExp = RegExp(r'^\w{1}[A-Za-z]{2}\w{5}[A-La-l]{1}\d{1}\d{2}$');
+    bool currentHinYearFormatResult = currentHinFormatRegExp.hasMatch(userInputHin);
+    if (currentHinYearFormatResult) {
+      // debugPrint('currentHinYearFormatResult test using RegExp: $currentHinYearFormatResult');
+      setState(() {
+        const snackBar = SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            'Valid HIN: Current Format',
+            style: TextStyle(fontSize: 30.0),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
     }
-    micUserDataResult = mic;
-    String serialNumber = hin.substring(3, 8);
-    String earlyHinWithM = hin.substring(8, 9);
+  } //userInput
 
-    /// Model Year Format (Used November 1, 1972– July 31, 1984)
-    /// XYZ 45678   M                   83               A
-    /// MIC SN      Denotes model/year  production year  production month
-    if (earlyHinWithM == 'M') {
-      String earlyHinWithMyear = hin.substring(9, 11);
-      String monthOfCert = decodeHinClass.decodeMonthModelYearFormat(hin.substring(11));
-      himWithMyearResults(mic, earlyHinWithMyear, monthOfCert, serialNumber);
-    } //if early HIN Model Year M
-
-    if (earlyHinWithM != 'M') {
-      String currentHinModelMonth = hin.substring(8, 9);
-      String currentHinModelMonthValue =
-          decodeHinClass.decodeMonthCurrentFormat(currentHinModelMonth);
-      String currentHinYear = hin.substring(10, 12);
-
-      try {
-        currentYearValue = int.parse(currentHinYear);
-      } catch (e) {
-        debugPrint('Error parsing the string: $e');
-        hinFormatError();
-      }
-      DateTime now = DateTime.now();
-      int currentYear = now.year;
-      currentYear = currentYear - 2000;
-      debugPrint(
-          'this is the current year value: $currentYear\n this is the decoded hin year: $currentYearValue');
-      if (currentYearValue >= 0 && currentYearValue <= currentYear) {
-        hinCurrentFormatYear2000(mic, currentHinYear, currentHinModelMonthValue, serialNumber);
-      } else if (currentYearValue >= 84 && currentYearValue <= 99) {
-        hinCurrentFormatYear1984_1999(mic, currentHinYear, currentHinModelMonthValue, serialNumber);
-      }
+  checkUserMicEntryValidForm(String userInputHin) {
+    RegExp micFormatAllNumericRegExp = RegExp(r'^\d{3}$');
+    bool micFormatAllNumericResult = micFormatAllNumericRegExp.hasMatch(userInputHin);
+    if (micFormatAllNumericResult) {
+      setState(() {
+        const snackBar = SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            'MIC is incorrect. Please try again!',
+            style: TextStyle(fontSize: 30.0),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
     }
-    return micUserDataResult;
-  } // decodeHIN
-
-  void hinLengthError() {
-    setState(() {
-      // _errorText = 'Invalid HIN length. Please enter 12 characters.';
-      decodedInfo = '';
-
-      const snackBar = SnackBar(
-        duration: Duration(seconds: 4),
-        content: Text(
-          'Invalid HIN length. Please enter 12 characters.',
-          style: TextStyle(fontSize: 30.0),
-        ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
   }
 
-  void hinMicError() {
-    setState(() {
-      decodedInfo = '';
-      const snackBar = SnackBar(
-        duration: Duration(seconds: 4),
-        content: Text(
-          'Error in MIC - first three characters of the HIN',
-          style: TextStyle(fontSize: 30.0),
-        ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
+  void checkUserHinEntryLength(String userHinEntry) {
+    // debugPrint('userHinEntry.length: ${userHinEntry.length}');
+    if (userHinEntry.length != 12 || userHinEntry.isEmpty) {
+      setState(() {
+        const snackBar = SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            'The HIN is 12 characters. Please try again!',
+            style: TextStyle(fontSize: 30.0),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    }
   }
-
-  void hinWithMyearError() {
-    var snackBar = const SnackBar(
-      duration: Duration(seconds: 2),
-      content: Text(
-        'There is an error in your HIN format. Check the HIN format.',
-        style: TextStyle(fontSize: 30.0),
-      ),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void himWithMyearResults(
-      String mic, String earlyHinWithMyear, String monthOfCert, String serialNumber) {
-    setState(() {
-      decodedInfo =
-          'Results:\nManuf. Code: $mic\nManuf. Year: 19$earlyHinWithMyear\nManuf. Month: $monthOfCert\nSerial Number: $serialNumber';
-    });
-  }
-
-  void hinFormatError() {
-    var snackBar = const SnackBar(
-      duration: Duration(seconds: 2),
-      content: Text(
-        'There is an error in your HIN format. Check the HIN format.',
-        style: TextStyle(fontSize: 30.0),
-      ),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void hinCurrentFormatYear2000(
-      String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-    setState(() {
-      decodedInfo =
-          'Results:\nManuf. Code: $mic\nManuf. Year: 20$currentHinYear\nManuf. Month: $currentHinModelMonthValue\nSerial Number: $serialNumber';
-    });
-  }
-
-  void hinCurrentFormatYear1984_1999(
-      String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-    setState(() {
-      decodedInfo =
-          'Results:\nManuf. Code: $mic\nYear: 19$currentHinYear\nMonth: $currentHinModelMonthValue\nSerial Number: $serialNumber';
-    });
-  }
-}
+  // String decodeHIN() {
+  //   int earlyHinWithMyearToInt = 0;
+  //   int currentYearValue = 0;
+  //   String micUserDataResult = '';
+  //   String hin = hinController.text.trim().toUpperCase();
+  //   String micValue = hinController.text.trim().toUpperCase().substring(0, 3);
+  //
+  //   if (hin.length != 12) {
+  //     hinLengthError();
+  //     return micUserDataResult;
+  //   }
+  //
+  //   /// Three HIN Formats
+  //   /// Straight Year Format (Used November 1, 1972– July 31, 1984)
+  //   /// ABC 12345   08                    83
+  //   /// MIC SN      Month of production   Year of production
+  //   ///
+  //   /// Current Format (Used exclusively August 1, 1984 to present)
+  //   /// BMA 45678   H4                    85
+  //   /// MIC SN      Month of production   Year of production
+  //
+  //   String mic = hin.substring(0, 3);
+  //   // Define regular expressions to check for numeric and alpha characters
+  //   RegExp numericRegExp = RegExp(r'\d');
+  //   RegExp alphaRegExp = RegExp(r'[a-zA-Z]');
+  //
+  //   // Iterate through each character in the string
+  //   for (int i = 0; i < mic.length; i++) {
+  //     bool micHasNumericAt1 = numericRegExp.hasMatch(mic[1]);
+  //     bool micHasNumericAt2 = numericRegExp.hasMatch(mic[2]);
+  //     // Check if the character is alpha
+  //     bool isAlpha = alphaRegExp.hasMatch(mic[i]);
+  //     // Handle the exception at each location
+  //     if (micHasNumericAt1 || micHasNumericAt2) {
+  //       hinMicError();
+  //       return micUserDataResult;
+  //       // Handle the exception here, for example, show an error message to the user.
+  //     }
+  //   }
+  //   micUserDataResult = mic;
+  //   String serialNumber = hin.substring(3, 8);
+  //   String earlyHinWithM = hin.substring(8, 9);
+  //
+  //   /// Model Year Format (Used November 1, 1972– July 31, 1984)
+  //   /// XYZ 45678   M                   83               A
+  //   /// MIC SN      Denotes model/year  production year  production month
+  //   if (earlyHinWithM == 'M') {
+  //     String earlyHinWithMyear = hin.substring(9, 11);
+  //     String monthOfCert = decodeHinClass.decodeMonthModelYearFormat(hin.substring(11));
+  //     himWithMyearResults(mic, earlyHinWithMyear, monthOfCert, serialNumber);
+  //   } //if early HIN Model Year M
+  //
+  //   if (earlyHinWithM != 'M') {
+  //     String currentHinModelMonth = hin.substring(8, 9);
+  //     String currentHinModelMonthValue =
+  //         decodeHinClass.decodeMonthCurrentFormat(currentHinModelMonth);
+  //     String currentHinYear = hin.substring(10, 12);
+  //
+  //     try {
+  //       currentYearValue = int.parse(currentHinYear);
+  //     } catch (e) {
+  //       // debugPrint('Error parsing the string: $e');
+  //       hinFormatError();
+  //     }
+  //     DateTime now = DateTime.now();
+  //     int currentYear = now.year;
+  //     currentYear = currentYear - 2000;
+  //     // debugPrint(
+  //     //     'this is the current year value: $currentYear\n this is the decoded hin year: $currentYearValue');
+  //     if (currentYearValue >= 0 && currentYearValue <= currentYear) {
+  //       hinCurrentFormatYear2000(mic, currentHinYear, currentHinModelMonthValue, serialNumber);
+  //     } else if (currentYearValue >= 84 && currentYearValue <= 99) {
+  //       hinCurrentFormatYear1984_1999(mic, currentHinYear, currentHinModelMonthValue, serialNumber);
+  //     }
+  //   }
+  //   return micUserDataResult;
+  // } // decodeHIN
+  //
+  // void hinLengthError() {
+  //   setState(() {
+  //     // _errorText = 'Invalid HIN length. Please enter 12 characters.';
+  //     decodedInfo = '';
+  //
+  //     const snackBar = SnackBar(
+  //       duration: Duration(seconds: 4),
+  //       content: Text(
+  //         'Invalid HIN length. Please enter 12 characters.',
+  //         style: TextStyle(fontSize: 30.0),
+  //       ),
+  //     );
+  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  //   });
+  // }
+  //
+  // void hinMicError() {
+  //   setState(() {
+  //     decodedInfo = '';
+  //     const snackBar = SnackBar(
+  //       duration: Duration(seconds: 4),
+  //       content: Text(
+  //         'Error in MIC - first three characters of the HIN',
+  //         style: TextStyle(fontSize: 30.0),
+  //       ),
+  //     );
+  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  //   });
+  // }
+  //
+  // void hinWithMyearError() {
+  //   var snackBar = const SnackBar(
+  //     duration: Duration(seconds: 2),
+  //     content: Text(
+  //       'There is an error in your HIN format. Check the HIN format.',
+  //       style: TextStyle(fontSize: 30.0),
+  //     ),
+  //   );
+  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  // }
+  //
+  // void himWithMyearResults(
+  //     String mic, String earlyHinWithMyear, String monthOfCert, String serialNumber) {
+  //   setState(() {
+  //     decodedInfo =
+  //         'Results:\nManuf. Code: $mic\nManuf. Year: 19$earlyHinWithMyear\nManuf. Month: $monthOfCert\nSerial Number: $serialNumber';
+  //   });
+  // }
+  //
+  // void hinFormatError() {
+  //   var snackBar = const SnackBar(
+  //     duration: Duration(seconds: 2),
+  //     content: Text(
+  //       'There is an error in your HIN format. Check the HIN format.',
+  //       style: TextStyle(fontSize: 30.0),
+  //     ),
+  //   );
+  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  // }
+  //
+  // void hinCurrentFormatYear2000(
+  //     String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
+  //   setState(() {
+  //     decodedInfo =
+  //         'Results:\nManuf. Code: $mic\nManuf. Year: 20$currentHinYear\nManuf. Month: $currentHinModelMonthValue\nSerial Number: $serialNumber';
+  //   });
+  // }
+  //
+  // void hinCurrentFormatYear1984_1999(
+  //     String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
+  //   setState(() {
+  //     decodedInfo =
+  //         'Results:\nManuf. Code: $mic\nYear: 19$currentHinYear\nMonth: $currentHinModelMonthValue\nSerial Number: $serialNumber';
+  //   });
+  // }
+} //class

@@ -20,7 +20,7 @@ class HinDataModel extends Equatable {
       monthOfProduction: '',
       yearOfProduction: '',
       modelYear: '');
-      
+
   @override
   List<Object> get props {
     return [

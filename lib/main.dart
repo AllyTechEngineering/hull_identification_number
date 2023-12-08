@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hull_identification_number/blocs/data/data_cubit.dart';
+import 'package:hull_identification_number/blocs/data/mic_data_cubit.dart';
+import 'package:hull_identification_number/blocs/hin_data/hin_data_cubit.dart';
 import 'package:hull_identification_number/repositories/mic_repository.dart';
 import 'package:hull_identification_number/screens/home_screen_two.dart';
 import 'package:hull_identification_number/screens/definition_screen.dart';
@@ -54,9 +55,14 @@ class MyApp extends StatelessWidget {
       create: (context) => MicRepository(),
       child: MultiBlocProvider(
         providers: [
-          BlocProvider<DataCubit>(
-            create: (context) => DataCubit(repository: MicRepository()),
-          )
+          BlocProvider<MicDataCubit>(
+            create: (context) => MicDataCubit(
+              repository: MicRepository(),
+            ),
+          ),
+          BlocProvider<HinDataCubit>(
+            create: (context) => HinDataCubit(),
+          ),
         ],
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
