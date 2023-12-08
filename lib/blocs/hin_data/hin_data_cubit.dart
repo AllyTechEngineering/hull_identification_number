@@ -41,242 +41,400 @@ class HinDataCubit extends Cubit<HinDataState> {
   }
 
   List<HinDataModel> decodeHIN(String userInputHin) {
-    String hin = userInputHin;
+    String hin = userInputHin; // raw user HIN input with no error checks
     // debugPrint('in decodeHIN at String hin = userInputHin: $hin');
     String mic = '';
     String earlyHinWithM = '';
     String serialNumber = '';
-    validateHin(userInputHin);
 
-    /// Three HIN Formats
-    /// Straight Year Format (Used November 1, 1972– July 31, 1984)
-    /// ABC 12345   08                    83
-    /// MIC SN      Month of production   Year of production
-    /// Model Year Format (Used November 1, 1972– July 31, 1984)
-    /// XYZ 45678   M                   83               A
-    /// MIC SN      Denotes model/year  production year  production month
-    /// Current Format (Used exclusively August 1, 1984 to present)
-    /// BMA 45678   H4                    85
-    /// MIC SN      Month of production   Year of production
-
-    // int earlyHinWithMyearToInt = 0;
     int currentYearValue = 0;
     List<HinDataModel> micUserDataResult = [];
-    // debugPrint('userInputHin.length ${userInputHin.length}');
-    // if (userInputHin.isEmpty || userInputHin.length < 12) {
-    //   userInputHin = 'AAA11111A100';
-    // }
-    if (userInputHin.isNotEmpty && userInputHin.length == 12) {
-      // debugPrint('inuserInputHin.isEmpty${userInputHin.isNotEmpty}');
-      mic = hin.substring(0, 3);
-      // Define regular expressions to check for numeric and alpha characters
-      RegExp numericRegExp = RegExp(r'\d');
-      RegExp alphaRegExp = RegExp(r'[a-zA-Z]');
-      // Iterate through each character in the string
 
-      for (int i = 0; i < mic.length; i++) {
-        bool micHasNumericAt1 = numericRegExp.hasMatch(mic[1]);
-        bool micHasNumericAt2 = numericRegExp.hasMatch(mic[2]);
-        // Check if the character is alpha
-        bool isAlpha = alphaRegExp.hasMatch(mic[i]);
-
-        /// TODO: check to see if the HIN is straight year, Model year or Current
-        /// HIN format: 0 1 2 3 4 5 6 7 8 9 10 11 (12 digits)
-        /// *Straight year November 1972 to July 1984*
-        /// 0 1 2 are alpha but 0 can be numeric for MIC
-        /// 3 4 5 6 7 are alpha numeric for S/N
-        /// 8 9 are numeric for month of production
-        /// 10 11 are for year of production
-        /// No model year!
-        ///
-        /// *Model year November 1972 to July 1984*
-        /// 0 1 2 are alpha but 0 can be numeric for MIC
-        /// 3 4 5 6 7 are alpha numeric for S/N
-        /// 8 is an M always
-        /// 9 10 are numeric for model year
-        /// 1984 to 1999 or 2000 to current year 2023
-        /// 11 is alpha for month (A - L) (same as current HIN)
-        /// No production year!
-        /// *Current HIN August 1984 to present*
-        /// 0 1 2 are MIC and 1 2 are alpha
-        /// 3 4 5 6 7 are serial number and are alpha numeric
-        /// 8 is alpha for month (A - L)
-        /// 9 is the production year
-        /// 10 and 11 are the model year and need to be used to change the production year format
-        /// 1984 to 1999 or 2000 to current year 2023
-        if (micHasNumericAt1 || micHasNumericAt2) {
-          hinMicError();
-          // debugPrint('In micHasNumericAt1 $micUserDataResult');
-          return micUserDataResult;
-          // Handle the exception here, for example, show an error message to the user.
-        }
-        // micUserDataResult = mic;
-        serialNumber = hin.substring(3, 8);
-        earlyHinWithM = hin.substring(8, 9);
-      }
-
-      if (earlyHinWithM == 'M') {
-        String earlyHinWithMyear = hin.substring(9, 11);
-        String monthOfCert = decodeHinClass.decodeMonthModelYearFormat(hin.substring(11));
-        // debugPrint('In earlyHinWithM $earlyHinWithMyear and $monthOfCert');
-        return micUserDataResult =
-            himWithMyearResults(mic, earlyHinWithMyear, monthOfCert, serialNumber);
-      } //if early HIN Model Year M
-
-      if (earlyHinWithM != 'M') {
-        String straightYearMonthFormat = hin.substring(8, 10);
-        // debugPrint('straightYearMonthFormat before call: $straightYearMonthFormat');
-        String currentHinModelMonthValue =
-            decodeHinClass.decodeStraightYearFormat(straightYearMonthFormat);
-        // debugPrint(
-        //     'In NOT earlyHinWithM $currentHinModelMonthValue and $currentHinModelMonthValue');
-        String straightYearFormat = hin.substring(10, 12);
-        // debugPrint('straightYearFormat: $straightYearFormat');
-
-        String currentHinYear = hin.substring(10, 12);
-
-        DateTime now = DateTime.now();
-        int currentYear = now.year;
-        currentYear = currentYear - 2000;
-        if (currentHinYear != '71' && currentYearValue <= 84) {
-          // debugPrint('In else if straight Model Year');
-          return micUserDataResult = hinStraightYearFormat_1972_1984(
-              mic, currentHinYear, currentHinModelMonthValue, serialNumber);
-        } else if (currentYearValue >= 0 && currentYearValue <= currentYear) {
-          // debugPrint('In if in 2000 plus year: $currentYear');
-          return micUserDataResult = hinCurrentFormatYear2000(
-              mic, '20$currentHinYear', currentHinModelMonthValue, serialNumber);
-        } else if (currentYearValue >= 84 && currentYearValue <= 99) {
-          // debugPrint('In else if in 1984 to 1999 year');
-          return micUserDataResult = hinCurrentFormatYear1984_1999(
-              mic, '19$currentHinYear', currentHinModelMonthValue, serialNumber);
-        }
-      }
-    }
-    return micUserDataResult;
+    return micUserDataResult =
+        validateHin(userInputHin); // new code to check for the three valid patterns
   } //List
 
-  void validateHin(String userInputHin) {
-    // debugPrint('In checkUserInputHinValidator and HIN is: $userInputHin');
+  List<HinDataModel> validateHin(String userInputHin) {
+    String hin = userInputHin;
+    List<HinDataModel> validatedUserHinResults = [];
     RegExp straightYearHinFormatRegExp = RegExp(r'^\w{1}[A-Za-z]{2}\w{5}\d{2}\d{2}$');
     bool straightYearHinFormatResult = straightYearHinFormatRegExp.hasMatch(userInputHin);
-    if (straightYearHinFormatResult) {
-      debugPrint(
-          'HinDataCubit: checkUserInputHinValidator Straight Year: $straightYearHinFormatResult and HIN: $userInputHin');
-    }
+    String straightYearMicResults;
+    String straightYearSerialNumberResults;
+    String straightYearMonthResults;
+    String straightYearYearResults;
     RegExp modelYearHinFormatRegExp = RegExp(r'^\w{1}[A-Za-z]{2}\w{5}[M-m]{1}\d{2}[A-La-l]{1}$');
     bool modelYearHinFormatResult = modelYearHinFormatRegExp.hasMatch(userInputHin);
-    if (modelYearHinFormatResult) {
-      debugPrint(
-          'HinDataCubit: modelYearFormatResult test using RegExp: $modelYearHinFormatResult');
-    }
-
+    String modelYearMicResults;
+    String modelYearSerialNumberResults;
+    String modelYearYearResults;
+    String modelYearMonthResults;
     RegExp currentHinFormatRegExp = RegExp(r'^\w{1}[A-Za-z]{2}\w{5}[A-La-l]{1}\d{1}\d{2}$');
     bool currentHinYearFormatResult = currentHinFormatRegExp.hasMatch(userInputHin);
-    if (currentHinYearFormatResult) {
-      debugPrint(
-          'HinDataCubit: currentHinYearFormatResult test using RegExp: $currentHinYearFormatResult');
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    currentYear = currentYear - 2000;
+    String currentHinYearFormatModelYearForCheckString;
+    int currentHinYearFormatModelYearForCheckInt;
+    String currentHinMicResults;
+    String currentHinSerialNumberResults;
+    String currentHinModelYearResults;
+    String currentHinProductionYearResults;
+    String currentHinProductionMonthResults;
+    if (straightYearHinFormatResult) {
+      // debugPrint(
+      //     'HinDataCubit: checkUserInputHinValidator Straight Year: $straightYearHinFormatResult and HIN: $userInputHin');
+      straightYearMicResults = hin.substring(0, 3);
+      straightYearSerialNumberResults = hin.substring(3, 8);
+      straightYearMonthResults = decodeHinClass.decodeStraightYearFormat(hin.substring(8, 10));
+      straightYearYearResults = hin.substring(10, 12);
+      // debugPrint(
+      //     'Straight Year Format MIC: $straightYearMicResults\nSerial Number: $straightYearSerialNumberResults\nMonth:$straightYearMonthResults\nYear:  $straightYearYearResults');
+      return validatedUserHinResults = straightYearFormatBuildDataModel_1972_1984(
+          straightYearMicResults,
+          straightYearSerialNumberResults,
+          straightYearMonthResults,
+          straightYearYearResults);
     }
+
+    if (modelYearHinFormatResult) {
+      // debugPrint(
+      //     'HinDataCubit: modelYearFormatResult test using RegExp: $modelYearHinFormatResult');
+      modelYearMicResults = hin.substring(0, 3);
+      modelYearSerialNumberResults = hin.substring(3, 8);
+      modelYearYearResults = hin.substring(9, 11);
+      modelYearMonthResults = decodeHinClass.decodeMonthModelYearFormat(hin.substring(11));
+      debugPrint(
+          'Model Year Format MIC: $modelYearMicResults\nSerial Number: $modelYearSerialNumberResults\nProduction Month: $modelYearMonthResults\nProduction Year: $modelYearYearResults');
+      return validatedUserHinResults = modelYearFormatBuildDataModel_1972_1984(modelYearMicResults,
+          modelYearSerialNumberResults, modelYearYearResults, modelYearMonthResults);
+    }
+    try {
+      if (currentHinYearFormatResult) {
+        // Start: Code to deal with 1980, 1990 and 2000 plus
+        currentHinYearFormatModelYearForCheckString = hin.substring(10, 12);
+        currentHinYearFormatModelYearForCheckInt =
+            int.parse(currentHinYearFormatModelYearForCheckString);
+        debugPrint(
+            'First currentHinYearFormatModelYearForCheckInt: $currentHinYearFormatModelYearForCheckInt');
+        // Current Hin for 1984 to 1989
+        if (currentHinYearFormatModelYearForCheckInt >= 84 &&
+            currentHinYearFormatModelYearForCheckInt <= 89) {
+          currentHinMicResults = hin.substring(0, 3);
+          currentHinSerialNumberResults = hin.substring(3, 8);
+          currentHinModelYearResults = '19${hin.substring(10, 12)}';
+          currentHinProductionYearResults = '198${hin.substring(9, 10)}';
+          currentHinProductionMonthResults =
+              decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+
+          return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+            currentHinMicResults,
+            currentHinSerialNumberResults,
+            currentHinProductionMonthResults,
+            currentHinProductionYearResults,
+            currentHinModelYearResults,
+          );
+        } else if (currentHinYearFormatModelYearForCheckInt >= 90 &&
+            currentHinYearFormatModelYearForCheckInt <= 99) {
+          currentHinMicResults = hin.substring(0, 3);
+          currentHinSerialNumberResults = hin.substring(3, 8);
+          currentHinModelYearResults = '19${hin.substring(10, 12)}';
+          currentHinProductionYearResults = '199${hin.substring(9, 10)}';
+          String currentHinProductionMonthResults =
+              decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+          return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+            currentHinMicResults,
+            currentHinSerialNumberResults,
+            currentHinProductionMonthResults,
+            currentHinProductionYearResults,
+            currentHinModelYearResults,
+          );
+        } else if (currentHinYearFormatModelYearForCheckInt >= 0 &&
+            currentHinYearFormatModelYearForCheckInt <= 9) {
+          currentHinMicResults = hin.substring(0, 3);
+          currentHinSerialNumberResults = hin.substring(3, 8);
+          currentHinModelYearResults = '20${hin.substring(10, 12)}';
+          currentHinProductionYearResults = '200${hin.substring(9, 10)}';
+          String currentHinProductionMonthResults =
+              decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+          return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+            currentHinMicResults,
+            currentHinSerialNumberResults,
+            currentHinProductionMonthResults,
+            currentHinProductionYearResults,
+            currentHinModelYearResults,
+          );
+        } else if (currentHinYearFormatModelYearForCheckInt >= 10 &&
+            currentHinYearFormatModelYearForCheckInt <= 19) {
+          currentHinMicResults = hin.substring(0, 3);
+          currentHinSerialNumberResults = hin.substring(3, 8);
+          currentHinModelYearResults = '20${hin.substring(10, 12)}';
+          currentHinProductionYearResults = '201${hin.substring(9, 10)}';
+          String currentHinProductionMonthResults =
+              decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+          return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+            currentHinMicResults,
+            currentHinSerialNumberResults,
+            currentHinProductionMonthResults,
+            currentHinProductionYearResults,
+            currentHinModelYearResults,
+          );
+        } else if (currentHinYearFormatModelYearForCheckInt >= 20 &&
+            currentHinYearFormatModelYearForCheckInt <= 29) {
+          currentHinMicResults = hin.substring(0, 3);
+          currentHinSerialNumberResults = hin.substring(3, 8);
+          currentHinModelYearResults = '20${hin.substring(10, 12)}';
+          currentHinProductionYearResults = '202${hin.substring(9, 10)}';
+          String currentHinProductionMonthResults =
+              decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+          return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+            currentHinMicResults,
+            currentHinSerialNumberResults,
+            currentHinProductionMonthResults,
+            currentHinProductionYearResults,
+            currentHinModelYearResults,
+          );
+        } else if (currentHinYearFormatModelYearForCheckInt >= 30 &&
+            currentHinYearFormatModelYearForCheckInt <= 39) {
+          currentHinMicResults = hin.substring(0, 3);
+          currentHinSerialNumberResults = hin.substring(3, 8);
+          currentHinModelYearResults = '20${hin.substring(10, 12)}';
+          currentHinProductionYearResults = '203${hin.substring(9, 10)}';
+          String currentHinProductionMonthResults =
+              decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+          return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+            currentHinMicResults,
+            currentHinSerialNumberResults,
+            currentHinProductionMonthResults,
+            currentHinProductionYearResults,
+            currentHinModelYearResults,
+          );
+        }
+      } //if (currentHinYearFormatResult)
+    } catch (e) {
+      debugPrint('Current Hin Try Catch error: $e');
+    }
+    if (currentHinYearFormatResult) {
+      // Start: Code to deal with 1980, 1990 and 2000 plus
+      currentHinYearFormatModelYearForCheckString = hin.substring(10, 12);
+      currentHinYearFormatModelYearForCheckInt =
+          int.parse(currentHinYearFormatModelYearForCheckString);
+      debugPrint(
+          'First currentHinYearFormatModelYearForCheckInt: $currentHinYearFormatModelYearForCheckInt');
+      // Current Hin for 1984 to 1989
+      if (currentHinYearFormatModelYearForCheckInt >= 84 &&
+          currentHinYearFormatModelYearForCheckInt <= 89) {
+        currentHinMicResults = hin.substring(0, 3);
+        currentHinSerialNumberResults = hin.substring(3, 8);
+        currentHinModelYearResults = '19${hin.substring(10, 12)}';
+        currentHinProductionYearResults = '198${hin.substring(9, 10)}';
+        currentHinProductionMonthResults =
+            decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+        // debugPrint(
+        //     'Current HIN Format MIC: $currentHinMicResults\nSerial Number: $currentHinSerialNumberResults\nModel Year: $currentHinModelYearResults\n Production Year: $currentHinProductionYearResults\n Production Month: $currentHinProductionMonthResults');
+        debugPrint(
+            'End of 84 to 89 if currentHinYearFormatModelYearForCheckInt: $currentHinYearFormatModelYearForCheckInt');
+        return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+          currentHinMicResults,
+          currentHinSerialNumberResults,
+          currentHinProductionMonthResults,
+          currentHinProductionYearResults,
+          currentHinModelYearResults,
+        );
+      } else if (currentHinYearFormatModelYearForCheckInt >= 90 &&
+          currentHinYearFormatModelYearForCheckInt <= 99) {
+        currentHinMicResults = hin.substring(0, 3);
+        currentHinSerialNumberResults = hin.substring(3, 8);
+        currentHinModelYearResults = '19${hin.substring(10, 12)}';
+        currentHinProductionYearResults = '199${hin.substring(9, 10)}';
+        String currentHinProductionMonthResults =
+            decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+        return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+          currentHinMicResults,
+          currentHinSerialNumberResults,
+          currentHinProductionMonthResults,
+          currentHinProductionYearResults,
+          currentHinModelYearResults,
+        );
+      } else if (currentHinYearFormatModelYearForCheckInt >= 0 &&
+          currentHinYearFormatModelYearForCheckInt <= 9) {
+        currentHinMicResults = hin.substring(0, 3);
+        currentHinSerialNumberResults = hin.substring(3, 8);
+        currentHinModelYearResults = '20${hin.substring(10, 12)}';
+        currentHinProductionYearResults = '200${hin.substring(9, 10)}';
+        String currentHinProductionMonthResults =
+            decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+        return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+          currentHinMicResults,
+          currentHinSerialNumberResults,
+          currentHinProductionMonthResults,
+          currentHinProductionYearResults,
+          currentHinModelYearResults,
+        );
+      } else if (currentHinYearFormatModelYearForCheckInt >= 10 &&
+          currentHinYearFormatModelYearForCheckInt <= 19) {
+        currentHinMicResults = hin.substring(0, 3);
+        currentHinSerialNumberResults = hin.substring(3, 8);
+        currentHinModelYearResults = '20${hin.substring(10, 12)}';
+        currentHinProductionYearResults = '201${hin.substring(9, 10)}';
+        String currentHinProductionMonthResults =
+            decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+        return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+          currentHinMicResults,
+          currentHinSerialNumberResults,
+          currentHinProductionMonthResults,
+          currentHinProductionYearResults,
+          currentHinModelYearResults,
+        );
+      } else if (currentHinYearFormatModelYearForCheckInt >= 20 &&
+          currentHinYearFormatModelYearForCheckInt <= 29) {
+        currentHinMicResults = hin.substring(0, 3);
+        currentHinSerialNumberResults = hin.substring(3, 8);
+        currentHinModelYearResults = '20${hin.substring(10, 12)}';
+        currentHinProductionYearResults = '202${hin.substring(9, 10)}';
+        String currentHinProductionMonthResults =
+            decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+        return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+          currentHinMicResults,
+          currentHinSerialNumberResults,
+          currentHinProductionMonthResults,
+          currentHinProductionYearResults,
+          currentHinModelYearResults,
+        );
+      } else if (currentHinYearFormatModelYearForCheckInt >= 30 &&
+          currentHinYearFormatModelYearForCheckInt <= 39) {
+        currentHinMicResults = hin.substring(0, 3);
+        currentHinSerialNumberResults = hin.substring(3, 8);
+        currentHinModelYearResults = '20${hin.substring(10, 12)}';
+        currentHinProductionYearResults = '203${hin.substring(9, 10)}';
+        String currentHinProductionMonthResults =
+            decodeHinClass.decodeMonthCurrentFormat(hin.substring(8, 9));
+        return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+          currentHinMicResults,
+          currentHinSerialNumberResults,
+          currentHinProductionMonthResults,
+          currentHinProductionYearResults,
+          currentHinModelYearResults,
+        );
+      }
+    } //if (currentHinYearFormatResult)
+
+    if (!currentHinYearFormatResult && !modelYearHinFormatResult && !straightYearHinFormatResult) {
+      debugPrint('In the if that checks to see if the HIN does not fit any of the patterns: $hin');
+      // return empty strings
+      return validatedUserHinResults = hinCurrentFormatBuildDataModel(
+        '',
+        '',
+        '',
+        '',
+        '',
+      );
+    }
+    return validatedUserHinResults;
   } //validate
 
-  // void validateHin(String userInputHin) {
-  //   RegExp straightYearHinFormatRegExp = RegExp(r'^[A-Za-z]{3}\d{5}\d{2}\d{2}$');
-  //   bool straightYearHinFormatResult = straightYearHinFormatRegExp.hasMatch(userInputHin);
-  //   if (straightYearHinFormatResult) {
-  //     // debugPrint('straightYearFormatResult test using RegExp: $straightYearHinFormatResult');
-  //   }
-  //   RegExp modelYearHinFormatRegExp = RegExp(r'^[A-Za-z]{3}\d{5}[M-m]{1}\d{2}[A-La-l]{1}$');
-  //   bool modelYearHinFormatResult = modelYearHinFormatRegExp.hasMatch(userInputHin);
-  //   if (modelYearHinFormatResult) {
-  //     // debugPrint('modelYearFormatResult test using RegExp: $modelYearHinFormatResult');
-  //   }
-  //
-  //   RegExp currentHinFormatRegExp = RegExp(r'^[A-Za-z]{3}\d{5}[A-La-l]{1}\d{1}\d{2}$');
-  //   bool currentHinYearFormatResult = currentHinFormatRegExp.hasMatch(userInputHin);
-  //   if (currentHinYearFormatResult) {
-  //     // debugPrint('currentHinYearFormatResult test using RegExp: $currentHinYearFormatResult');
-  //   }
-  //
-  //   RegExp numericRegExp = RegExp(r'\d');
-  //   RegExp alphaRegExp = RegExp(r'[a-zA-Z]');
-  //   String validateHinValue = userInputHin.substring(0, 12);
-  //
-  //   /// TODO: check each HIN location for numeric or alpha
-  //   /// Numeric check
-  //   bool hin0Numeric = numericRegExp.hasMatch(validateHinValue[0]);
-  //   bool hin1Numeric = numericRegExp.hasMatch(validateHinValue[1]);
-  //   bool hin2Numeric = numericRegExp.hasMatch(validateHinValue[2]);
-  //   bool hin3Numeric = numericRegExp.hasMatch(validateHinValue[3]);
-  //   bool hin4Numeric = numericRegExp.hasMatch(validateHinValue[4]);
-  //   bool hin5Numeric = numericRegExp.hasMatch(validateHinValue[5]);
-  //   bool hin6Numeric = numericRegExp.hasMatch(validateHinValue[6]);
-  //   bool hin7Numeric = numericRegExp.hasMatch(validateHinValue[7]);
-  //   bool hin8Numeric = numericRegExp.hasMatch(validateHinValue[8]);
-  //   bool hin9Numeric = numericRegExp.hasMatch(validateHinValue[9]);
-  //   bool hin10Numeric = numericRegExp.hasMatch(validateHinValue[10]);
-  //   bool hin11Numeric = numericRegExp.hasMatch(validateHinValue[11]);
-  //
-  //   /// Alpha check
-  //   bool hin0Alpha = alphaRegExp.hasMatch(validateHinValue[0]);
-  //   bool hin1Alpha = alphaRegExp.hasMatch(validateHinValue[1]);
-  //   bool hin2Alpha = alphaRegExp.hasMatch(validateHinValue[2]);
-  //   bool hin3Alpha = alphaRegExp.hasMatch(validateHinValue[3]);
-  //   bool hin4Alpha = alphaRegExp.hasMatch(validateHinValue[4]);
-  //   bool hin5Alpha = alphaRegExp.hasMatch(validateHinValue[5]);
-  //   bool hin6Alpha = alphaRegExp.hasMatch(validateHinValue[6]);
-  //   bool hin7Alpha = alphaRegExp.hasMatch(validateHinValue[7]);
-  //   bool hin8Alpha = alphaRegExp.hasMatch(validateHinValue[8]);
-  //   bool hin9Alpha = alphaRegExp.hasMatch(validateHinValue[9]);
-  //   bool hin10Alpha = alphaRegExp.hasMatch(validateHinValue[10]);
-  //   bool hin11Alpha = alphaRegExp.hasMatch(validateHinValue[11]);
-  //
-  //   /// TODO: check to see if the HIN is straight year, Model year or Current
-  //   /// HIN format: 0 1 2 3 4 5 6 7 8 9 10 11 (12 digits)
-  //   /// *Straight Year November 1972 to July 1984*
-  //   /// 0 1 2 are alpha but 0 can be numeric for MIC
-  //   /// 3 4 5 6 7 are alpha numeric for S/N
-  //   /// 8 9 are numeric for month of production
-  //   /// 10 11 are for year of production
-  //   /// No model year!
-  //   if ((hin0Alpha || hin10Numeric) &&
-  //       hin1Alpha &&
-  //       hin2Alpha &&
-  //       hin8Numeric &&
-  //       hin9Numeric &&
-  //       hin10Numeric &&
-  //       hin11Numeric) {
-  //     // debugPrint('In check for Straight Year and HIN: $userInputHin');
-  //     if ((validateHinValue[8] == '1' || validateHinValue[8] == '0') &&
-  //         (validateHinValue[9] == '1' ||
-  //             validateHinValue[9] == '2' ||
-  //             validateHinValue[9] == '3' ||
-  //             validateHinValue[9] == '4' ||
-  //             validateHinValue[9] == '5' ||
-  //             validateHinValue[9] == '6' ||
-  //             validateHinValue[9] == '7' ||
-  //             validateHinValue[9] == '8' ||
-  //             validateHinValue[9] == '9')) {
-  //       // debugPrint('In check for Straight Year and HIN checking for valid month: $userInputHin');
-  //     }
-  //   }
-  //
-  //   /// *Model year November 1972 to July 1984*
-  //   /// 0 1 2 are alpha but 0 can be numeric for MIC
-  //   /// 3 4 5 6 7 are alpha numeric for S/N
-  //   /// 8 is an M always
-  //   /// 9 10 are numeric for model year
-  //   /// 1984 to 1999 or 2000 to current year 2023
-  //   /// 11 is alpha for month (A - L) (same as current HIN)
-  //   /// No production year!
-  //   /// *Current HIN August 1984 to present*
-  //   /// 0 1 2 are MIC and 1 2 are alpha
-  //   /// 3 4 5 6 7 are serial number and are alpha numeric
-  //   /// 8 is alpha for month (A - L)
-  //   /// 9 is the production year
-  //   /// 10 and 11 are the model year and need to be used to change the production year format
-  //   /// 1984 to 1999 or 2000 to current year 2023
-  //   ///
-  // }
+  List<HinDataModel> modelYearFormatBuildDataModel_1972_1984(String mic, String serialNumber,
+      String modelYearFormatYear, String modelYearFormatMonthOfProd) {
+    List<HinDataModel> tempResults = [];
+    // manufIdentCode: '',
+    // hullSerialNumber: '',
+    // monthOfProduction: '',
+    // yearOfProduction: '',
+    // modelYear: '');
+    HinDataModel hinDataModel = HinDataModel(
+      manufIdentCode: mic,
+      hullSerialNumber: serialNumber,
+      monthOfProduction: modelYearFormatMonthOfProd,
+      yearOfProduction: 'N/A',
+      modelYear: '19$modelYearFormatYear',
+    );
+    // tempResults.add(hinDataModel);
+    // debugPrint('In himWithMyearResults: $tempResults');
+    tempResults.add(hinDataModel);
+    return tempResults;
+  } // himWithMyearResults
+
+  List<HinDataModel> straightYearFormatBuildDataModel_1972_1984(
+    String mic,
+    String serialNumber,
+    String straightYearFormatProdMonth,
+    String straightYearFormatProdYear,
+  ) {
+    List<HinDataModel> tempResults = [];
+    // manufIdentCode: '',
+    // hullSerialNumber: '',
+    // monthOfProduction: '',
+    // yearOfProduction: '',
+    // modelYear: '');
+    HinDataModel hinDataModel = HinDataModel(
+      manufIdentCode: mic,
+      hullSerialNumber: serialNumber,
+      monthOfProduction: straightYearFormatProdMonth,
+      yearOfProduction: '19$straightYearFormatProdYear',
+      modelYear: 'N/A',
+    );
+    tempResults.add(hinDataModel);
+    // debugPrint('In himWithMyearResults: $tempResults');
+    tempResults.add(hinDataModel);
+    return tempResults;
+  }
+
+  List<HinDataModel> hinCurrentFormatBuildDataModel(
+    String mic,
+    String serialNumber,
+    String currentHinProdMonth,
+    String currentHinProdYear,
+    String currentHinModelYear,
+  ) {
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    currentYear = currentYear - 2000;
+
+    List<HinDataModel> tempResults = [];
+    HinDataModel hinDataModel = HinDataModel(
+      manufIdentCode: mic,
+      hullSerialNumber: serialNumber,
+      monthOfProduction: currentHinProdMonth,
+      modelYear: currentHinModelYear,
+      yearOfProduction: currentHinProdYear,
+    );
+    tempResults.add(hinDataModel);
+    // debugPrint('In himWithMyearResults: $tempResults');
+    tempResults.add(hinDataModel);
+    return tempResults;
+  }
+
+  List<HinDataModel> hinCurrentFormatYear2000(String mic, String currentHinProdYear,
+      String currentHinModelYear, String currentHinProdMonth, String serialNumber) {
+    List<HinDataModel> tempResults = [];
+    HinDataModel hinDataModel = HinDataModel(
+      manufIdentCode: mic,
+      hullSerialNumber: serialNumber,
+      monthOfProduction: currentHinProdMonth,
+      modelYear: '20$currentHinModelYear',
+      yearOfProduction: '20$currentHinProdYear',
+    );
+    tempResults.add(hinDataModel);
+    // debugPrint('In himWithMyearResults: $tempResults');
+    tempResults.add(hinDataModel);
+    return tempResults;
+  }
+
+  List<HinDataModel> hinCurrentFormatYear1984_1999(String mic, String currentHinProdYear,
+      String currentHinModelYear, String currentHinProdMonth, String serialNumber) {
+    List<HinDataModel> tempResults = [];
+    HinDataModel hinDataModel = HinDataModel(
+      manufIdentCode: mic,
+      hullSerialNumber: serialNumber,
+      monthOfProduction: currentHinProdMonth,
+      modelYear: '19$currentHinModelYear',
+      yearOfProduction: '19$currentHinProdYear',
+    );
+    tempResults.add(hinDataModel);
+    // debugPrint('In himWithMyearResults: $tempResults');
+    tempResults.add(hinDataModel);
+    return tempResults;
+  }
 
   void hinLengthError() {
     debugPrint('hinLengthError');
@@ -292,69 +450,5 @@ class HinDataCubit extends Cubit<HinDataState> {
 
   void hinFormatError() {
     debugPrint('hinFormatError');
-  }
-
-  List<HinDataModel> himWithMyearResults(
-      String mic, String earlyHinWithMyear, String monthOfCert, String serialNumber) {
-    List<HinDataModel> tempResults = [];
-    HinDataModel hinDataModel = HinDataModel(
-      manufIdentCode: mic,
-      hullSerialNumber: serialNumber,
-      monthOfProduction: monthOfCert,
-      modelYear: '19$earlyHinWithMyear',
-      yearOfProduction: 'N/A',
-    );
-    // tempResults.add(hinDataModel);
-    // debugPrint('In himWithMyearResults: $tempResults');
-    tempResults.add(hinDataModel);
-    return tempResults;
-  } // himWithMyearResults
-
-  List<HinDataModel> hinStraightYearFormat_1972_1984(
-      String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-    List<HinDataModel> tempResults = [];
-    HinDataModel hinDataModel = HinDataModel(
-      manufIdentCode: mic,
-      hullSerialNumber: serialNumber,
-      monthOfProduction: currentHinModelMonthValue,
-      modelYear: 'N/A',
-      yearOfProduction: '19$currentHinYear',
-    );
-    tempResults.add(hinDataModel);
-    // debugPrint('In himWithMyearResults: $tempResults');
-    tempResults.add(hinDataModel);
-    return tempResults;
-  }
-
-  List<HinDataModel> hinCurrentFormatYear2000(
-      String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-    List<HinDataModel> tempResults = [];
-    HinDataModel hinDataModel = HinDataModel(
-      manufIdentCode: mic,
-      hullSerialNumber: serialNumber,
-      monthOfProduction: currentHinModelMonthValue,
-      modelYear: currentHinYear,
-      yearOfProduction: currentHinYear,
-    );
-    tempResults.add(hinDataModel);
-    // debugPrint('In himWithMyearResults: $tempResults');
-    tempResults.add(hinDataModel);
-    return tempResults;
-  }
-
-  List<HinDataModel> hinCurrentFormatYear1984_1999(
-      String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-    List<HinDataModel> tempResults = [];
-    HinDataModel hinDataModel = HinDataModel(
-      manufIdentCode: mic,
-      hullSerialNumber: serialNumber,
-      monthOfProduction: currentHinModelMonthValue,
-      modelYear: currentHinYear,
-      yearOfProduction: currentHinYear,
-    );
-    tempResults.add(hinDataModel);
-    // debugPrint('In himWithMyearResults: $tempResults');
-    tempResults.add(hinDataModel);
-    return tempResults;
   }
 }

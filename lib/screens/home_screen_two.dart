@@ -82,27 +82,38 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
             ),
             child: Column(
               children: [
-                ListTile(
-                  title: TextField(
-                    cursorColor: Colors.white,
-                    controller: hinController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                        borderSide: const BorderSide(width: 4.0, color: Colors.black),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonWidth() * 1.6,
+                    height: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonHeight(),
+                    child: TextField(
+                      cursorColor: Colors.white,
+                      controller: hinController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: const BorderSide(width: 4.0, color: Colors.black),
+                        ),
+                        hintStyle: Theme.of(context).textTheme.displayMedium,
+                        hintText: 'Enter a 12 digit HIN...',
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          // size: height * 0.08,
+                        ),
                       ),
-                      hintStyle: Theme.of(context).textTheme.displayLarge,
-                      hintText: 'Enter a 12 digit HIN...',
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        // size: height * 0.08,
-                      ),
+                      // errorText: _errorText.isNotEmpty ? _errorText : null,
                     ),
-                    // errorText: _errorText.isNotEmpty ? _errorText : null,
                   ),
                 ),
                 const SizedBox(height: 8.0),
                 Container(
+                  width: responsiveAdaptiveClass.elevatedButtonWidth =
+                      responsiveAdaptiveClass.selectElevatedButtonWidth(),
+                  height: responsiveAdaptiveClass.elevatedButtonWidth =
+                      responsiveAdaptiveClass.selectElevatedButtonHeight(),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
@@ -135,9 +146,9 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                         /// TODO: change so that in the HomeScreenTwo the user is notified of errors.
                         /// Until I understand how to report errors back to the UI and alert the user (from a cubit or bloc) handle the actual error management in the cubits.
                         checkUserMicEntryValidForm(hinController.text.trim().toUpperCase());
-                        context.read<MicDataCubit>().getUserEnteredMicData(
-                              hinController.text.trim().toUpperCase(),
-                            );
+                        // context.read<MicDataCubit>().getUserEnteredMicData(
+                        //       hinController.text.trim().toUpperCase(),
+                        //     );
                       },
                       style: ElevatedButton.styleFrom(
                           elevation: 10.0,
@@ -165,6 +176,10 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                 ),
                 const SizedBox(height: 8.0),
                 Container(
+                  width: responsiveAdaptiveClass.elevatedButtonWidth =
+                      responsiveAdaptiveClass.selectElevatedButtonWidth(),
+                  height: responsiveAdaptiveClass.elevatedButtonWidth =
+                      responsiveAdaptiveClass.selectElevatedButtonHeight(),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
@@ -257,7 +272,7 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           ),
                           Text(
                             // decodedInfo
-                            'Manuf. Month: ${hinResults[0].monthOfProduction}',
+                            'Month of Production: ${hinResults[0].monthOfProduction}',
                             style: const TextStyle(fontSize: 14.0, color: Colors.white),
                           ),
                           const Divider(
@@ -268,7 +283,7 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           ),
                           Text(
                             // decodedInfo
-                            'Production Year: ${hinResults[0].yearOfProduction}',
+                            'Year of Production: ${hinResults[0].yearOfProduction}',
                             style: const TextStyle(fontSize: 14.0, color: Colors.white),
                           ),
                           const Divider(

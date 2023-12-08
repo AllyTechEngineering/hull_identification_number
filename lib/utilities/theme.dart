@@ -122,7 +122,7 @@ final appTheme = ThemeData(
   ),
   listTileTheme: ListTileThemeData(
     dense: true,
-    visualDensity: VisualDensity(vertical: -3, horizontal: -3),
+    visualDensity: VisualDensity(vertical: -4, horizontal: -4),
     textColor: Colors.white,
     titleTextStyle: GoogleFonts.roboto(
       fontStyle: FontStyle.normal,

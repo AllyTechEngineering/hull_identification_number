@@ -243,14 +243,43 @@ class ResponsiveAdaptiveClass {
 
   double selectElevatedButtonHeight() {
     if (Platform.isIOS) {
+      // small iPhones: 375 w x 667 h
       if ((orientation == Orientation.portrait) && (width >= 375 && height <= 667)) {
-        elevatedButtonHeight = height / 15.0;
+        elevatedButtonHeight = height / 18.0;
         return elevatedButtonHeight;
       } else if (orientation == Orientation.landscape) {
         elevatedButtonHeight = height / 6.6;
         return elevatedButtonHeight;
       }
+      //  iPhones: 375 w x 812 h
+      if ((orientation == Orientation.portrait) && (width >= 375 && height <= 812)) {
+        elevatedButtonHeight = height / 16.0;
+        return elevatedButtonHeight;
+      } else if ((orientation == Orientation.landscape) && (width >= 812 && height <= 375)) {
+        elevatedButtonHeight = height / 6.6;
+        return elevatedButtonHeight;
+      }
+      // iPhones: 390 w to 430 w x 844 h to 932 h
+      if ((orientation == Orientation.portrait) &&
+          ((width >= 390 && width <= 430) && (height >= 844 && height <= 932))) {
+        elevatedButtonHeight = height / 16.0;
+        return elevatedButtonHeight;
+      } else if ((orientation == Orientation.landscape) && (width >= 844 && height <= 430)) {
+        elevatedButtonHeight = height / 6.6;
+        return elevatedButtonHeight;
+      }
+      // iPads: 744 w to 834 w x 1024 h to 1194 h
+      if ((orientation == Orientation.portrait) &&
+          ((width >= 744 && width <= 834) && (height >= 1024 && height <= 1194))) {
+        elevatedButtonHeight = height / 16.0;
+        return elevatedButtonHeight;
+      } else if ((orientation == Orientation.landscape) &&
+          ((height >= 744 && height <= 834) && (width >= 1024 && width <= 1194))) {
+        elevatedButtonHeight = height / 6.6;
+        return elevatedButtonHeight;
+      }
     }
+
     return elevatedButtonHeight;
   }
 

@@ -14,22 +14,22 @@ class MicDataCubit extends Cubit<MicDataState> {
   }
   void getUserEnteredMicData(String userEnteredHinMic) async {
     List<MicDataModel>;
-    debugPrint(' in getUserEnteredMicData and getUserEnteredMicData is: $userEnteredHinMic');
+    // debugPrint(' in getUserEnteredMicData and getUserEnteredMicData is: $userEnteredHinMic');
     String validMicFromSubString;
     if (userEnteredHinMic.length > 2) {
       validMicFromSubString = userEnteredHinMic.substring(0, 3);
-      debugPrint(
-          'in if (userEnteredHinMic.length >2) and validMicFromSubString = userEnteredHinMic.substring(0, 3): $validMicFromSubString ');
+      // debugPrint(
+      //     'in if (userEnteredHinMic.length >2) and validMicFromSubString = userEnteredHinMic.substring(0, 3): $validMicFromSubString ');
     }
     RegExp validateUserEnteredMicDataFromHin = RegExp(r'^\w[A-Za-z]{2}$');
-    debugPrint(
-        'Testing RegExp validateUserEnteredMicDataFromHin RegExp: $validateUserEnteredMicDataFromHin');
+    // debugPrint(
+    //     'Testing RegExp validateUserEnteredMicDataFromHin RegExp: $validateUserEnteredMicDataFromHin');
     bool validMicFromHinResult =
         validateUserEnteredMicDataFromHin.hasMatch(userEnteredHinMic.substring(0, 3));
-    debugPrint('Testing the bool validMicFromHinResult: $validMicFromHinResult ');
+    // debugPrint('Testing the bool validMicFromHinResult: $validMicFromHinResult ');
     if (validMicFromHinResult) {
-      debugPrint(
-          'In the if after checking using RegExp for validMicFromHinResult: $validMicFromHinResult');
+      // debugPrint(
+      //     'In the if after checking using RegExp for validMicFromHinResult: $validMicFromHinResult');
       try {
         emit(
           LoadingState(),
@@ -42,7 +42,7 @@ class MicDataCubit extends Cubit<MicDataState> {
         emit(ErrorState());
       }
     } else if (validMicFromHinResult == false) {
-      debugPrint('In else if (validMicFromHinResult == false) ');
+      // debugPrint('In else if (validMicFromHinResult == false) ');
       try {
         emit(
           LoadingState(),
@@ -53,6 +53,6 @@ class MicDataCubit extends Cubit<MicDataState> {
         // debugPrint('in MicDataCubit and this is the error: $e');
         emit(ErrorState());
       }
-    }
-  }
-}
+    } //else If
+  } //getUserEnteredMicData
+} // class
