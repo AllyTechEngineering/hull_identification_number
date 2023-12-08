@@ -4,7 +4,7 @@ import 'dart:async';
 // import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:hull_identification_number/models/mic_data_model.dart';
+import '../models/mic_data_model.dart';
 // import 'package:path_provider/path_provider.dart';
 
 class MicRepository {

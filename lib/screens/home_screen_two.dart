@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hull_identification_number/blocs/data/mic_data_cubit.dart';
-import 'package:hull_identification_number/blocs/hin_data/hin_data_cubit.dart';
-import 'package:hull_identification_number/models/hin_data_model.dart';
-import 'package:hull_identification_number/models/mic_data_model.dart';
-import 'package:hull_identification_number/repositories/mic_repository.dart';
-import 'package:hull_identification_number/utilities/decode_hin_class.dart';
-import 'package:hull_identification_number/utilities/responsive_adaptive_class.dart';
+
+import '../blocs/data/mic_data_cubit.dart';
+import '../blocs/hin_data/hin_data_cubit.dart';
+import '../models/hin_data_model.dart';
+import '../models/mic_data_model.dart';
+import '../repositories/mic_repository.dart';
+import '../utilities/decode_hin_class.dart';
+import '../utilities/responsive_adaptive_class.dart';
 
 class HomeScreenTwo extends StatefulWidget {
   const HomeScreenTwo({super.key});
@@ -146,9 +147,9 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                         /// TODO: change so that in the HomeScreenTwo the user is notified of errors.
                         /// Until I understand how to report errors back to the UI and alert the user (from a cubit or bloc) handle the actual error management in the cubits.
                         checkUserMicEntryValidForm(hinController.text.trim().toUpperCase());
-                        // context.read<MicDataCubit>().getUserEnteredMicData(
-                        //       hinController.text.trim().toUpperCase(),
-                        //     );
+                        context.read<MicDataCubit>().getUserEnteredMicData(
+                              hinController.text.trim().toUpperCase(),
+                            );
                       },
                       style: ElevatedButton.styleFrom(
                           elevation: 10.0,
@@ -235,23 +236,29 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Divider(
+                          Divider(
                             color: Colors.white60,
                             thickness: 4,
                             endIndent: 2,
                             indent: 2,
                           ),
-                          const Center(
+                          Center(
                             child: Text(
                               // decodedInfo
                               'Decoded HIN Results',
-                              style: TextStyle(fontSize: 18.0, color: Colors.white60),
+                              style: TextStyle(
+                                  fontSize: responsiveAdaptiveClass.classFontSize =
+                                      responsiveAdaptiveClass.selectClassFontSize(),
+                                  color: Colors.white60),
                             ),
                           ),
                           Text(
                             // decodedInfo
                             'Manuf ID: ${hinResults[0].manufIdentCode}',
-                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: responsiveAdaptiveClass.classFontSize =
+                                    responsiveAdaptiveClass.selectClassFontSize(),
+                                color: Colors.white),
                           ),
                           const Divider(
                             color: Colors.white60,
@@ -262,7 +269,10 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           Text(
                             // decodedInfo
                             'Serial Number: ${hinResults[0].hullSerialNumber}',
-                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: responsiveAdaptiveClass.classFontSize =
+                                    responsiveAdaptiveClass.selectClassFontSize(),
+                                color: Colors.white),
                           ),
                           const Divider(
                             color: Colors.white60,
@@ -273,7 +283,10 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           Text(
                             // decodedInfo
                             'Month of Production: ${hinResults[0].monthOfProduction}',
-                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: responsiveAdaptiveClass.classFontSize =
+                                    responsiveAdaptiveClass.selectClassFontSize(),
+                                color: Colors.white),
                           ),
                           const Divider(
                             color: Colors.white60,
@@ -284,7 +297,10 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           Text(
                             // decodedInfo
                             'Year of Production: ${hinResults[0].yearOfProduction}',
-                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: responsiveAdaptiveClass.classFontSize =
+                                    responsiveAdaptiveClass.selectClassFontSize(),
+                                color: Colors.white),
                           ),
                           const Divider(
                             color: Colors.white60,
@@ -295,7 +311,10 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                           Text(
                             // decodedInfo
                             'Model Year: ${hinResults[0].modelYear}',
-                            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: responsiveAdaptiveClass.classFontSize =
+                                    responsiveAdaptiveClass.selectClassFontSize(),
+                                color: Colors.white),
                           ),
                         ],
                       ),
@@ -327,19 +346,23 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                               endIndent: 2,
                               indent: 2,
                             ),
-                            const Center(
+                            Center(
                               child: Text(
                                 'Manuf. ID Code',
                                 style: TextStyle(
-                                    fontSize: 18.0,
+                                    fontSize: responsiveAdaptiveClass.classFontSize =
+                                        responsiveAdaptiveClass.selectClassFontSize(),
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white60),
                               ),
                             ),
                             Text(
                               'Manuf: ${micResults[0].company}',
-                              style: const TextStyle(
-                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                  fontSize: responsiveAdaptiveClass.classFontSize =
+                                      responsiveAdaptiveClass.selectClassFontSize(),
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
                             const Divider(
                               color: Colors.white60,
@@ -349,8 +372,11 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                             ),
                             Text(
                               'Address: ${micResults[0].address}',
-                              style: const TextStyle(
-                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                  fontSize: responsiveAdaptiveClass.classFontSize =
+                                      responsiveAdaptiveClass.selectClassFontSize(),
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
                             const Divider(
                               color: Colors.white60,
@@ -360,8 +386,11 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                             ),
                             Text(
                               'City: ${micResults[0].city}',
-                              style: const TextStyle(
-                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                  fontSize: responsiveAdaptiveClass.classFontSize =
+                                      responsiveAdaptiveClass.selectClassFontSize(),
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
                             const Divider(
                               color: Colors.white60,
@@ -371,8 +400,11 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
                             ),
                             Text(
                               'State: ${micResults[0].state}',
-                              style: const TextStyle(
-                                  fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                  fontSize: responsiveAdaptiveClass.classFontSize =
+                                      responsiveAdaptiveClass.selectClassFontSize(),
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
                           ],
                         ),
@@ -440,6 +472,18 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       });
     }
+    if (!modelYearHinFormatResult && !straightYearHinFormatResult && !currentHinYearFormatResult) {
+      setState(() {
+        const snackBar = SnackBar(
+          duration: Duration(seconds: 4),
+          content: Text(
+            'Please check the HIN Format!',
+            style: TextStyle(fontSize: 30.0),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    }
   } //userInput
 
   checkUserMicEntryValidForm(String userInputHin) {
@@ -474,157 +518,4 @@ class _HomeScreenTwoState extends State<HomeScreenTwo> {
       });
     }
   }
-  // String decodeHIN() {
-  //   int earlyHinWithMyearToInt = 0;
-  //   int currentYearValue = 0;
-  //   String micUserDataResult = '';
-  //   String hin = hinController.text.trim().toUpperCase();
-  //   String micValue = hinController.text.trim().toUpperCase().substring(0, 3);
-  //
-  //   if (hin.length != 12) {
-  //     hinLengthError();
-  //     return micUserDataResult;
-  //   }
-  //
-  //   /// Three HIN Formats
-  //   /// Straight Year Format (Used November 1, 1972– July 31, 1984)
-  //   /// ABC 12345   08                    83
-  //   /// MIC SN      Month of production   Year of production
-  //   ///
-  //   /// Current Format (Used exclusively August 1, 1984 to present)
-  //   /// BMA 45678   H4                    85
-  //   /// MIC SN      Month of production   Year of production
-  //
-  //   String mic = hin.substring(0, 3);
-  //   // Define regular expressions to check for numeric and alpha characters
-  //   RegExp numericRegExp = RegExp(r'\d');
-  //   RegExp alphaRegExp = RegExp(r'[a-zA-Z]');
-  //
-  //   // Iterate through each character in the string
-  //   for (int i = 0; i < mic.length; i++) {
-  //     bool micHasNumericAt1 = numericRegExp.hasMatch(mic[1]);
-  //     bool micHasNumericAt2 = numericRegExp.hasMatch(mic[2]);
-  //     // Check if the character is alpha
-  //     bool isAlpha = alphaRegExp.hasMatch(mic[i]);
-  //     // Handle the exception at each location
-  //     if (micHasNumericAt1 || micHasNumericAt2) {
-  //       hinMicError();
-  //       return micUserDataResult;
-  //       // Handle the exception here, for example, show an error message to the user.
-  //     }
-  //   }
-  //   micUserDataResult = mic;
-  //   String serialNumber = hin.substring(3, 8);
-  //   String earlyHinWithM = hin.substring(8, 9);
-  //
-  //   /// Model Year Format (Used November 1, 1972– July 31, 1984)
-  //   /// XYZ 45678   M                   83               A
-  //   /// MIC SN      Denotes model/year  production year  production month
-  //   if (earlyHinWithM == 'M') {
-  //     String earlyHinWithMyear = hin.substring(9, 11);
-  //     String monthOfCert = decodeHinClass.decodeMonthModelYearFormat(hin.substring(11));
-  //     himWithMyearResults(mic, earlyHinWithMyear, monthOfCert, serialNumber);
-  //   } //if early HIN Model Year M
-  //
-  //   if (earlyHinWithM != 'M') {
-  //     String currentHinModelMonth = hin.substring(8, 9);
-  //     String currentHinModelMonthValue =
-  //         decodeHinClass.decodeMonthCurrentFormat(currentHinModelMonth);
-  //     String currentHinYear = hin.substring(10, 12);
-  //
-  //     try {
-  //       currentYearValue = int.parse(currentHinYear);
-  //     } catch (e) {
-  //       // debugPrint('Error parsing the string: $e');
-  //       hinFormatError();
-  //     }
-  //     DateTime now = DateTime.now();
-  //     int currentYear = now.year;
-  //     currentYear = currentYear - 2000;
-  //     // debugPrint(
-  //     //     'this is the current year value: $currentYear\n this is the decoded hin year: $currentYearValue');
-  //     if (currentYearValue >= 0 && currentYearValue <= currentYear) {
-  //       hinCurrentFormatYear2000(mic, currentHinYear, currentHinModelMonthValue, serialNumber);
-  //     } else if (currentYearValue >= 84 && currentYearValue <= 99) {
-  //       hinCurrentFormatYear1984_1999(mic, currentHinYear, currentHinModelMonthValue, serialNumber);
-  //     }
-  //   }
-  //   return micUserDataResult;
-  // } // decodeHIN
-  //
-  // void hinLengthError() {
-  //   setState(() {
-  //     // _errorText = 'Invalid HIN length. Please enter 12 characters.';
-  //     decodedInfo = '';
-  //
-  //     const snackBar = SnackBar(
-  //       duration: Duration(seconds: 4),
-  //       content: Text(
-  //         'Invalid HIN length. Please enter 12 characters.',
-  //         style: TextStyle(fontSize: 30.0),
-  //       ),
-  //     );
-  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //   });
-  // }
-  //
-  // void hinMicError() {
-  //   setState(() {
-  //     decodedInfo = '';
-  //     const snackBar = SnackBar(
-  //       duration: Duration(seconds: 4),
-  //       content: Text(
-  //         'Error in MIC - first three characters of the HIN',
-  //         style: TextStyle(fontSize: 30.0),
-  //       ),
-  //     );
-  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //   });
-  // }
-  //
-  // void hinWithMyearError() {
-  //   var snackBar = const SnackBar(
-  //     duration: Duration(seconds: 2),
-  //     content: Text(
-  //       'There is an error in your HIN format. Check the HIN format.',
-  //       style: TextStyle(fontSize: 30.0),
-  //     ),
-  //   );
-  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  // }
-  //
-  // void himWithMyearResults(
-  //     String mic, String earlyHinWithMyear, String monthOfCert, String serialNumber) {
-  //   setState(() {
-  //     decodedInfo =
-  //         'Results:\nManuf. Code: $mic\nManuf. Year: 19$earlyHinWithMyear\nManuf. Month: $monthOfCert\nSerial Number: $serialNumber';
-  //   });
-  // }
-  //
-  // void hinFormatError() {
-  //   var snackBar = const SnackBar(
-  //     duration: Duration(seconds: 2),
-  //     content: Text(
-  //       'There is an error in your HIN format. Check the HIN format.',
-  //       style: TextStyle(fontSize: 30.0),
-  //     ),
-  //   );
-  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  // }
-  //
-  // void hinCurrentFormatYear2000(
-  //     String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-  //   setState(() {
-  //     decodedInfo =
-  //         'Results:\nManuf. Code: $mic\nManuf. Year: 20$currentHinYear\nManuf. Month: $currentHinModelMonthValue\nSerial Number: $serialNumber';
-  //   });
-  // }
-  //
-  // void hinCurrentFormatYear1984_1999(
-  //     String mic, String currentHinYear, String currentHinModelMonthValue, String serialNumber) {
-  //   setState(() {
-  //     decodedInfo =
-  //         'Results:\nManuf. Code: $mic\nYear: 19$currentHinYear\nMonth: $currentHinModelMonthValue\nSerial Number: $serialNumber';
-  //   });
-  // }
 } //class

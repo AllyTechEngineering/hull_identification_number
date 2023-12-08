@@ -42,10 +42,10 @@ class ResponsiveAdaptiveClass {
     if (Platform.isIOS) {
       // small iPhones: 375 w x 667 h
       if ((orientation == Orientation.portrait) && (width >= 375 && height <= 667)) {
-        classFontSize = 18.0;
+        classFontSize = 14.0;
         return classFontSize;
       } else if ((orientation == Orientation.landscape) && (width >= 667 && height <= 375)) {
-        classFontSize = 22.0;
+        classFontSize = 14.0;
         return classFontSize;
       }
       // small iPhones: 375 w x 812 h
@@ -77,6 +77,18 @@ class ResponsiveAdaptiveClass {
       } else if ((orientation == Orientation.landscape) &&
           ((height >= 744 && height <= 834) && (width >= 1024 && width <= 1194))) {
         classFontSize = 22.0;
+        // debugPrint(
+        //     'iPads: 744 w to 834 w x 1024 h to 1194 h Landscape classFontSize: $classFontSize');
+        return classFontSize;
+      }
+      // iPads: 1024 w x 1366 h
+      if ((orientation == Orientation.portrait) && ((width >= 1024) && (height <= 1366))) {
+        classFontSize = 30.0;
+        // debugPrint(
+        //     'iPads: 744 w to 834 w x 1024 h to 1194 h Portrait classFontSize: $classFontSize');
+        return classFontSize;
+      } else if ((orientation == Orientation.landscape) && ((height >= 1366) && (width <= 1024))) {
+        classFontSize = 30.0;
         // debugPrint(
         //     'iPads: 744 w to 834 w x 1024 h to 1194 h Landscape classFontSize: $classFontSize');
         return classFontSize;
@@ -125,6 +137,18 @@ class ResponsiveAdaptiveClass {
       } else if ((orientation == Orientation.landscape) &&
           ((height >= 744 && height <= 834) && (width >= 1024 && width <= 1194))) {
         appBarTitleFontSize = 22.0;
+        // debugPrint(
+        //     'iPads: 744 w to 834 w x 1024 h to 1194 h Landscape classFontSize: $appBarTitleFontSize');
+        return appBarTitleFontSize;
+      }
+      // iPads: 1024 w x 1366 h
+      if ((orientation == Orientation.portrait) && ((width >= 1024) && (height <= 1366))) {
+        appBarTitleFontSize = 30.0;
+        // debugPrint(
+        //     'iPads: 744 w to 834 w x 1024 h to 1194 h Portrait appBarTitleFontSize: $appBarTitleFontSize');
+        return appBarTitleFontSize;
+      } else if ((orientation == Orientation.landscape) && ((height >= 1366) && (width <= 1024))) {
+        appBarTitleFontSize = 30.0;
         // debugPrint(
         //     'iPads: 744 w to 834 w x 1024 h to 1194 h Landscape classFontSize: $appBarTitleFontSize');
         return appBarTitleFontSize;
@@ -275,6 +299,14 @@ class ResponsiveAdaptiveClass {
         return elevatedButtonHeight;
       } else if ((orientation == Orientation.landscape) &&
           ((height >= 744 && height <= 834) && (width >= 1024 && width <= 1194))) {
+        elevatedButtonHeight = height / 6.6;
+        return elevatedButtonHeight;
+      }
+      // iPads: 1024 w x 1366  h
+      if ((orientation == Orientation.portrait) && ((width >= 1024) && (height <= 1366))) {
+        elevatedButtonHeight = height / 16.0;
+        return elevatedButtonHeight;
+      } else if ((orientation == Orientation.landscape) && ((height >= 1366) && (width <= 1024))) {
         elevatedButtonHeight = height / 6.6;
         return elevatedButtonHeight;
       }

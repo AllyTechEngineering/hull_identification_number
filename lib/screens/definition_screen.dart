@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hull_identification_number/utilities/responsive_adaptive_class.dart';
+import '../utilities/responsive_adaptive_class.dart';
 // import 'package:hull_identification_number/blocs/data/mic_data_cubit.dart';
 // import 'package:hull_identification_number/models/mic_data_model.dart';
 // import 'package:hull_identification_number/repositories/mic_repository.dart';

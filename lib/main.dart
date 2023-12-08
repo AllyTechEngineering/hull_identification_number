@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hull_identification_number/blocs/data/mic_data_cubit.dart';
-import 'package:hull_identification_number/blocs/hin_data/hin_data_cubit.dart';
-import 'package:hull_identification_number/repositories/mic_repository.dart';
-import 'package:hull_identification_number/screens/home_screen_two.dart';
-import 'package:hull_identification_number/screens/definition_screen.dart';
-import 'package:hull_identification_number/screens/settings_screen.dart';
-import 'package:hull_identification_number/utilities/theme.dart';
-// import 'dart:io';
+
+import 'blocs/data/mic_data_cubit.dart';
+import 'blocs/hin_data/hin_data_cubit.dart';
+import 'repositories/mic_repository.dart';
+import 'screens/definition_screen.dart';
+import 'screens/home_screen_two.dart';
+import 'screens/settings_screen.dart';
+import 'utilities/theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hull_identification_number/blocs/data/mic_data_cubit.dart';
-import 'package:hull_identification_number/models/mic_data_model.dart';
-import 'package:hull_identification_number/repositories/mic_repository.dart';
-import 'package:hull_identification_number/screens/home_screen_two.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../utilities/responsive_adaptive_class.dart';
@@ -67,6 +62,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListView(
                 children: <Widget>[
                   Container(
+                    width: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonWidth(),
+                    height: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonHeight(),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
@@ -111,6 +110,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     height: 10.0,
                   ),
                   Container(
+                    width: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonWidth(),
+                    height: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonHeight(),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
@@ -155,6 +158,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     height: 10.0,
                   ),
                   Container(
+                    width: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonWidth(),
+                    height: responsiveAdaptiveClass.elevatedButtonWidth =
+                        responsiveAdaptiveClass.selectElevatedButtonHeight(),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,

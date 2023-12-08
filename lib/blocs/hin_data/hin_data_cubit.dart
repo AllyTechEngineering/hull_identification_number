@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:hull_identification_number/models/hin_data_model.dart';
-import 'package:hull_identification_number/utilities/decode_hin_class.dart';
+
 import 'package:flutter/material.dart';
+
+import '../../models/hin_data_model.dart';
+import '../../utilities/decode_hin_class.dart';
 part 'hin_data_state.dart';
 
 class HinDataCubit extends Cubit<HinDataState> {
